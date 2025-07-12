@@ -182,7 +182,6 @@ export default function Home() {
           </div>
         )}
       </header>
-
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-red-50 to-white py-12 sm:py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -198,10 +197,9 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       {/* Tools Grid */}
       <section className="py-12 sm:py-16 lg:py-20" id="tools">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-[-121px] mb-[-121px]">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
               Choose your PDF tool
@@ -222,7 +220,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       {/* Features Section */}
       <section className="py-12 sm:py-16 lg:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -252,7 +249,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -293,17 +289,14 @@ export default function Home() {
           </div>
         </div>
       </footer>
-
       {/* Processing Modal */}
       <ProcessingModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         selectedTool={selectedTool ? tools.find(t => t.id === selectedTool) : null}
       />
-
       {/* Mobile Navigation */}
       {isMobile && <MobileNav onToolSelect={handleToolSelect} />}
-      
       {/* Mobile bottom padding to avoid overlap with fixed nav */}
       {isMobile && <div className="h-20"></div>}
     </div>
