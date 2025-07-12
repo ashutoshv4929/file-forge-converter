@@ -47,6 +47,7 @@ export const insertProcessingJobSchema = createInsertSchema(processingJobs).omit
   completedAt: true,
 }).extend({
   inputFiles: z.array(z.string()),
+  outputFiles: z.array(z.string()).optional(),
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;

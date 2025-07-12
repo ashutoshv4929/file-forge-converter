@@ -88,8 +88,8 @@ export class MemStorage implements IStorage {
       progress: insertJob.progress ?? 0,
       error: insertJob.error ?? null,
       options: insertJob.options ?? {},
-      outputFiles: insertJob.outputFiles ?? [],
-      inputFiles: Array.isArray(insertJob.inputFiles) ? insertJob.inputFiles : [insertJob.inputFiles].filter(Boolean),
+      outputFiles: (insertJob.outputFiles as string[]) || [],
+      inputFiles: insertJob.inputFiles,
       createdAt: new Date(),
       completedAt: null,
     };

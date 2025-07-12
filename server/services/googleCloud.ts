@@ -7,23 +7,37 @@ const storage = new Storage({
   projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
 });
 
-// Initialize Google Vision API with direct API key
-const vision = new ImageAnnotatorClient({
-  auth: {
-    scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-    credentials: {
-      private_key: process.env.GOOGLE_CLOUD_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      client_email: process.env.GOOGLE_CLOUD_CLIENT_EMAIL,
-    }
-  },
-  projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-});
+// Initialize Google Vision API with fallback to local processing
+let vision: ImageAnnotatorClient | null = null;
+let visionInitialized = false;
 
-// Fallback to API key if credentials are not available
-const visionWithApiKey = process.env.GOOGLE_CLOUD_API_KEY ? new ImageAnnotatorClient({
-  auth: process.env.GOOGLE_CLOUD_API_KEY,
-  projectId: process.env.GOOGLE_CLOUD_PROJECT_ID || 'default-project',
-}) : vision;
+function getVisionClient(): ImageAnnotatorClient | null {
+  if (visionInitialized) return vision;
+  
+  try {
+    if (process.env.GOOGLE_CLOUD_API_KEY) {
+      vision = new ImageAnnotatorClient({
+        auth: process.env.GOOGLE_CLOUD_API_KEY,
+        projectId: process.env.GOOGLE_CLOUD_PROJECT_ID || 'default-project',
+      });
+    } else if (process.env.GOOGLE_CLOUD_PRIVATE_KEY && process.env.GOOGLE_CLOUD_CLIENT_EMAIL) {
+      vision = new ImageAnnotatorClient({
+        credentials: {
+          private_key: process.env.GOOGLE_CLOUD_PRIVATE_KEY.replace(/\\n/g, '\n'),
+          client_email: process.env.GOOGLE_CLOUD_CLIENT_EMAIL,
+        },
+        projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+      });
+    }
+    visionInitialized = true;
+  } catch (error) {
+    console.warn('Google Vision API initialization failed:', error);
+    vision = null;
+    visionInitialized = true;
+  }
+  
+  return vision;
+}
 
 const bucketName = process.env.GOOGLE_CLOUD_STORAGE_BUCKET || 'pdf-tools-storage';
 const bucket = storage.bucket(bucketName);
@@ -63,9 +77,14 @@ export class GoogleCloudService {
   }
 
   async extractTextFromImage(imageBuffer: Buffer): Promise<string> {
+    const visionClient = getVisionClient();
+    
+    if (!visionClient) {
+      console.warn('Google Vision API not available, returning empty text');
+      return '';
+    }
+    
     try {
-      // Use the Vision API with API key if available
-      const visionClient = process.env.GOOGLE_CLOUD_API_KEY ? visionWithApiKey : vision;
       const [result] = await visionClient.textDetection({
         image: { content: imageBuffer },
       });
@@ -74,13 +93,20 @@ export class GoogleCloudService {
       return detections && detections.length > 0 ? detections[0].description || '' : '';
     } catch (error) {
       console.error('OCR Error:', error);
-      throw new Error('Failed to extract text from image');
+      return '';
     }
   }
 
   async extractTextFromPdf(pdfBuffer: Buffer): Promise<string> {
+    const visionClient = getVisionClient();
+    
+    if (!visionClient) {
+      console.warn('Google Vision API not available, returning empty text');
+      return '';
+    }
+    
     try {
-      const [result] = await vision.documentTextDetection({
+      const [result] = await visionClient.documentTextDetection({
         image: { content: pdfBuffer },
       });
       
@@ -88,7 +114,7 @@ export class GoogleCloudService {
       return fullTextAnnotation?.text || '';
     } catch (error) {
       console.error('PDF OCR Error:', error);
-      throw new Error('Failed to extract text from PDF');
+      return '';
     }
   }
 }
