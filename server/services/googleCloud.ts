@@ -17,7 +17,7 @@ function getVisionClient(): ImageAnnotatorClient | null {
   try {
     if (process.env.GOOGLE_CLOUD_API_KEY) {
       vision = new ImageAnnotatorClient({
-        auth: process.env.GOOGLE_CLOUD_API_KEY,
+        apiKey: process.env.GOOGLE_CLOUD_API_KEY,
         projectId: process.env.GOOGLE_CLOUD_PROJECT_ID || 'default-project',
       });
     } else if (process.env.GOOGLE_CLOUD_PRIVATE_KEY && process.env.GOOGLE_CLOUD_CLIENT_EMAIL) {
