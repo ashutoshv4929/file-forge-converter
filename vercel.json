@@ -11,10 +11,7 @@
     }
   ],
   "routes": [
-    { "handle": "filesystem" },
     { "src": "/api/(.*)", "dest": "/server" },
     { "src": "/(.*)", "dest": "/client" }
-  ],
-  "buildCommand": "npm run vercel-build",
-  "outputDirectory": "dist"
+  ]
 }
