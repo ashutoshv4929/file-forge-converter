@@ -2,7 +2,7 @@ import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import multer, { FileFilterCallback } from "multer";
 import { storage } from "./storage";
-import { googleCloudService } from "./services/googleCloud";
+import { localStorageService } from "./services/localStorage";
 import { pdfProcessor } from "./services/pdfProcessor";
 import { insertFileSchema, insertProcessingJobSchema } from "@shared/schema";
 import path from "path";
@@ -51,8 +51,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const fileName = `${uuidv4()}-${file.originalname}`;
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-        // Upload to Google Cloud Storage
-        await googleCloudService.uploadFile(file.buffer, fileName, file.mimetype);
+        // Upload to local storage
+        await localStorageService.uploadFile(file.buffer, fileName, file.mimetype);
 
         // Save file record
         const fileRecord = await storage.createFile({
@@ -138,7 +138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const fileName = job.outputFiles[fileIndex];
-      const buffer = await googleCloudService.downloadFile(fileName);
+      const buffer = await localStorageService.downloadFile(fileName);
       
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
@@ -149,6 +149,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Download files endpoint
+  app.get("/api/download/:fileName", async (req, res) => {
+    try {
+      const fileName = req.params.fileName;
+      const buffer = await localStorageService.downloadFile(fileName);
+      
+      // Determine content type based on file extension
+      const ext = path.extname(fileName).toLowerCase();
+      let contentType = 'application/octet-stream';
+      
+      if (ext === '.pdf') contentType = 'application/pdf';
+      else if (ext === '.txt') contentType = 'text/plain';
+      else if (['.jpg', '.jpeg'].includes(ext)) contentType = 'image/jpeg';
+      else if (ext === '.png') contentType = 'image/png';
+      
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      res.send(buffer);
+    } catch (error) {
+      console.error('Download error:', error);
+      res.status(404).json({ error: "File not found" });
+    }
+  });
+
   // Clean up expired files
   app.post("/api/cleanup", async (req, res) => {
     try {
@@ -156,7 +180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       for (const file of expiredFiles) {
         try {
-          await googleCloudService.deleteFile(file.storagePath);
+          await localStorageService.deleteFile(file.storagePath);
           await storage.deleteFile(file.id);
         } catch (error) {
           console.error(`Failed to delete file ${file.id}:`, error);
@@ -188,7 +212,7 @@ async function processJob(jobId: number) {
       const file = await storage.getFile(fileId);
       if (!file) throw new Error(`Input file ${fileId} not found`);
       
-      const buffer = await googleCloudService.downloadFile(file.storagePath);
+      const buffer = await localStorageService.downloadFile(file.storagePath);
       inputBuffers.push(buffer);
       
       await storage.updateProcessingJob(jobId, { 
@@ -244,7 +268,7 @@ async function processJob(jobId: number) {
         const imageTexts: string[] = [];
         for (let i = 0; i < inputBuffers.length; i++) {
           try {
-            const text = await googleCloudService.extractTextFromImage(inputBuffers[i]);
+            const text = await localStorageService.extractTextFromImage(inputBuffers[i]);
             imageTexts.push(`=== Image ${i + 1} ===\n${text}\n\n`);
           } catch (error) {
             console.error(`OCR failed for image ${i + 1}:`, error);
@@ -272,12 +296,7 @@ async function processJob(jobId: number) {
     const uploadedOutputFiles: string[] = [];
     for (let i = 0; i < outputBuffers.length; i++) {
       const fileName = outputFileNames[i];
-      await googleCloudService.uploadFile(
-        outputBuffers[i], 
-        fileName, 
-        fileName.endsWith('.pdf') ? 'application/pdf' : 
-        fileName.endsWith('.txt') ? 'text/plain' : 'image/png'
-      );
+      await localStorageService.saveOutputFile(outputBuffers[i], fileName);
       uploadedOutputFiles.push(fileName);
       
       await storage.updateProcessingJob(jobId, { 

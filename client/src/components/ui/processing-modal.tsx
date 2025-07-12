@@ -321,21 +321,14 @@ export function ProcessingModal({ isOpen, onClose, selectedTool }: ProcessingMod
 
           {/* Action Buttons */}
           {!currentJobId && uploadedFiles.length > 0 && (
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="space-y-3">
               <Button
                 onClick={handleStartProcessing}
                 disabled={uploadMutation.isPending || processMutation.isPending}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 h-12"
+                className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-lg"
               >
-                <Settings className="h-4 w-4 mr-2" />
-                {processMutation.isPending ? 'Starting...' : `Process ${uploadedFiles.length} File(s)`}
-              </Button>
-              <Button
-                onClick={handleClose}
-                variant="outline"
-                className="sm:w-auto h-12"
-              >
-                Close
+                <Settings className="h-5 w-5 mr-2" />
+                {processMutation.isPending ? 'Starting Conversion...' : `Convert ${uploadedFiles.length} File(s)`}
               </Button>
             </div>
           )}
