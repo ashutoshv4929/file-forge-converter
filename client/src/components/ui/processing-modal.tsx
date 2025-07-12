@@ -47,20 +47,29 @@ export function ProcessingModal({ isOpen, onClose, selectedTool }: ProcessingMod
       const formData = new FormData();
       files.forEach(file => formData.append('files', file));
       
-      const response = await apiRequest('POST', '/api/upload', formData);
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
       return response.json();
     },
     onSuccess: (data) => {
       setUploadedFiles(data.files);
       toast({
-        title: "Files uploaded successfully",
+        title: "Files uploaded",
         description: `${data.files.length} file(s) ready for processing`,
       });
     },
     onError: (error) => {
+      console.error('Upload error:', error);
       toast({
         title: "Upload failed",
-        description: error.message,
+        description: "Please try again with smaller files",
         variant: "destructive",
       });
     }
@@ -157,7 +166,7 @@ export function ProcessingModal({ isOpen, onClose, selectedTool }: ProcessingMod
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-4">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             {selectedTool?.title || 'PDF Tool'}
@@ -179,30 +188,35 @@ export function ProcessingModal({ isOpen, onClose, selectedTool }: ProcessingMod
           {/* Uploaded Files List */}
           {uploadedFiles.length > 0 && !currentJobId && (
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900">Uploaded Files</h4>
-              {uploadedFiles.map((file, index) => (
-                <div key={file.id} className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-red-100 rounded flex items-center justify-center">
-                      <span className="text-red-600 text-xs font-bold">PDF</span>
+              <h4 className="font-medium text-gray-900">Ready to Process ({uploadedFiles.length} files)</h4>
+              <div className="max-h-40 overflow-y-auto space-y-2">
+                {uploadedFiles.map((file, index) => (
+                  <div key={file.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-3">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <div className="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
+                        <span className="text-green-600 text-xs font-bold">
+                          {file.type.includes('pdf') ? 'PDF' : 
+                           file.type.includes('image') ? 'IMG' : 'DOC'}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{file.name}</p>
+                        <p className="text-sm text-gray-500">
+                          {(file.size / (1024 * 1024)).toFixed(2)} MB
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{file.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {(file.size / (1024 * 1024)).toFixed(2)} MB
-                      </p>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeFile(index)}
+                      className="ml-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeFile(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
 
@@ -298,14 +312,21 @@ export function ProcessingModal({ isOpen, onClose, selectedTool }: ProcessingMod
 
           {/* Action Buttons */}
           {!currentJobId && uploadedFiles.length > 0 && (
-            <div className="flex space-x-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 onClick={handleStartProcessing}
                 disabled={uploadMutation.isPending || processMutation.isPending}
-                className="flex-1 bg-red-600 hover:bg-red-700"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 h-12"
               >
                 <Settings className="h-4 w-4 mr-2" />
-                {processMutation.isPending ? 'Starting...' : 'Process Files'}
+                {processMutation.isPending ? 'Starting...' : `Process ${uploadedFiles.length} File(s)`}
+              </Button>
+              <Button
+                onClick={handleClose}
+                variant="outline"
+                className="sm:w-auto h-12"
+              >
+                Cancel
               </Button>
             </div>
           )}

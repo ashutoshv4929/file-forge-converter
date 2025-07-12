@@ -95,14 +95,14 @@ export function FileDropzone({
         onDrop={handleDrop}
         onClick={() => document.getElementById('file-input')?.click()}
       >
-        <Upload className="mx-auto h-12 w-12 text-red-500 mb-4" />
-        <p className="text-lg font-medium text-gray-700 mb-2">
-          Drop your files here
+        <Upload className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-blue-500 mb-3 sm:mb-4" />
+        <p className="text-base sm:text-lg font-medium text-gray-700 mb-2">
+          Drop files here or tap to browse
         </p>
-        <p className="text-sm text-gray-500 mb-4">
-          or click to browse (Max 50MB per file)
+        <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
+          PDF, Images, Word docs (Max 50MB)
         </p>
-        <button className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors">
+        <button className="bg-blue-600 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm sm:text-base">
           Choose Files
         </button>
         
@@ -117,17 +117,17 @@ export function FileDropzone({
       </div>
 
       {files.length > 0 && (
-        <div className="mt-6 space-y-3">
+        <div className="mt-4 space-y-2">
           {files.map((file, index) => (
-            <div key={index} className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-red-100 rounded flex items-center justify-center">
-                  <span className="text-red-600 text-xs font-bold">
+            <div key={index} className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
+              <div className="flex items-center space-x-3 flex-1 min-w-0">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-blue-600 text-xs font-bold">
                     {file.name.split('.').pop()?.toUpperCase()}
                   </span>
                 </div>
-                <div>
-                  <p className="font-medium text-gray-900">{file.name}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 truncate">{file.name}</p>
                   <p className="text-sm text-gray-500">{formatFileSize(file.size)}</p>
                 </div>
               </div>
@@ -136,7 +136,7 @@ export function FileDropzone({
                   e.stopPropagation();
                   removeFile(index);
                 }}
-                className="text-red-500 hover:text-red-700 p-1"
+                className="ml-2 flex-shrink-0 w-8 h-8 flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>

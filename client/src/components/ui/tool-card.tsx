@@ -30,21 +30,24 @@ export function ToolCard({ tool, onClick }: ToolCardProps) {
 
   return (
     <div
-      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer group"
+      className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-all cursor-pointer group hover:scale-105"
       onClick={onClick}
     >
       <div className="text-center">
         <div className={cn(
-          "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 transition-colors",
+          "w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 transition-colors",
           colorClass
         )}>
-          <IconComponent className="h-8 w-8" />
+          <IconComponent className="h-6 w-6 sm:h-8 sm:w-8" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <h3 className="text-sm sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
           {tool.title}
         </h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">
           {tool.description}
+        </p>
+        <p className="text-xs text-gray-600 sm:hidden">
+          {tool.description.split(' ').slice(0, 3).join(' ')}...
         </p>
       </div>
     </div>

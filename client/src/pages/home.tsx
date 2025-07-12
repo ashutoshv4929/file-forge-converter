@@ -196,13 +196,17 @@ export default function Home() {
             
             {/* Quick upload area */}
             <div className="max-w-2xl mx-auto">
-              <FileDropzone
-                onFilesSelected={(files) => {
-                  console.log('Files selected:', files);
-                  // Handle quick upload
-                }}
-                className="border-2 border-dashed border-red-300 rounded-xl p-8 sm:p-12 bg-white/50 hover:border-red-400 transition-colors cursor-pointer"
-              />
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sm:p-8">
+                <FileDropzone
+                  onFilesSelected={(files) => {
+                    if (files.length > 0) {
+                      // Auto-open the first tool for quick processing
+                      handleToolSelect('merge');
+                    }
+                  }}
+                  className="border-2 border-dashed border-blue-300 rounded-lg p-6 sm:p-8 hover:border-blue-400 transition-colors cursor-pointer"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -220,7 +224,7 @@ export default function Home() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {tools.map((tool) => (
               <ToolCard
                 key={tool.id}
@@ -312,6 +316,9 @@ export default function Home() {
 
       {/* Mobile Navigation */}
       {isMobile && <MobileNav onToolSelect={handleToolSelect} />}
+      
+      {/* Mobile bottom padding to avoid overlap with fixed nav */}
+      {isMobile && <div className="h-20"></div>}
     </div>
   );
 }
