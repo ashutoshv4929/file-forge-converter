@@ -89,8 +89,7 @@ export class MemStorage implements IStorage {
       error: insertJob.error ?? null,
       options: insertJob.options ?? {},
       outputFiles: insertJob.outputFiles ?? [],
-      inputFiles: Array.isArray(insertJob.inputFiles) ? insertJob.inputFiles : 
-                  typeof insertJob.inputFiles === 'string' ? [insertJob.inputFiles] : [],
+      inputFiles: insertJob.inputFiles as string[],
       createdAt: new Date(),
       completedAt: null,
     };

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { FileDropzone } from './file-dropzone';
+import { SimpleFileUpload } from './simple-file-upload';
 import { ProgressIndicator } from './progress-indicator';
 import { Download, X, Settings } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -82,7 +82,18 @@ export function ProcessingModal({ isOpen, onClose, selectedTool }: ProcessingMod
       inputFiles: string[];
       options: Record<string, any>;
     }) => {
-      const response = await apiRequest('POST', '/api/process', jobData);
+      const response = await fetch('/api/process', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(jobData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Processing failed');
+      }
+      
       return response.json();
     },
     onSuccess: (data) => {
@@ -93,9 +104,10 @@ export function ProcessingModal({ isOpen, onClose, selectedTool }: ProcessingMod
       });
     },
     onError: (error) => {
+      console.error('Processing error:', error);
       toast({
         title: "Processing failed",
-        description: error.message,
+        description: "Please try again",
         variant: "destructive",
       });
     }
@@ -168,20 +180,17 @@ export function ProcessingModal({ isOpen, onClose, selectedTool }: ProcessingMod
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-4">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
+          <DialogTitle>
             {selectedTool?.title || 'PDF Tool'}
-            <Button variant="ghost" size="sm" onClick={handleClose}>
-              <X className="h-4 w-4" />
-            </Button>
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* File Upload Area */}
-          {!currentJobId && (
-            <FileDropzone
+          {!currentJobId && uploadedFiles.length === 0 && (
+            <SimpleFileUpload
               onFilesSelected={handleFilesSelected}
-              className="border-2 border-dashed border-gray-300 rounded-lg p-8"
+              isUploading={uploadMutation.isPending}
             />
           )}
 
@@ -326,7 +335,7 @@ export function ProcessingModal({ isOpen, onClose, selectedTool }: ProcessingMod
                 variant="outline"
                 className="sm:w-auto h-12"
               >
-                Cancel
+                Close
               </Button>
             </div>
           )}

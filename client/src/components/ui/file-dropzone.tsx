@@ -95,16 +95,16 @@ export function FileDropzone({
         onDrop={handleDrop}
         onClick={() => document.getElementById('file-input')?.click()}
       >
-        <Upload className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-blue-500 mb-3 sm:mb-4" />
-        <p className="text-base sm:text-lg font-medium text-gray-700 mb-2">
+        <Upload className="mx-auto h-12 w-12 text-blue-500 mb-4" />
+        <p className="text-lg font-medium text-gray-700 mb-2">
           Drop files here or tap to browse
         </p>
-        <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
+        <p className="text-sm text-gray-500 mb-4">
           PDF, Images, Word docs (Max 50MB)
         </p>
-        <button className="bg-blue-600 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm sm:text-base">
+        <div className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors cursor-pointer inline-block">
           Choose Files
-        </button>
+        </div>
         
         <input
           id="file-input"
