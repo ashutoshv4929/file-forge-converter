@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileDropzone } from "@/components/ui/file-dropzone";
+
 import { ToolCard } from "@/components/ui/tool-card";
 import { ProcessingModal } from "@/components/ui/processing-modal";
 import { MobileNav } from "@/components/ui/mobile-nav";
@@ -194,20 +194,7 @@ export default function Home() {
               Convert, merge, split, compress and edit PDF files for free. Our tools are secure, fast, and work on any device.
             </p>
             
-            {/* Quick upload area */}
-            <div className="max-w-2xl mx-auto">
-              <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sm:p-8">
-                <FileDropzone
-                  onFilesSelected={(files) => {
-                    if (files.length > 0) {
-                      // Auto-open the first tool for quick processing
-                      handleToolSelect('merge');
-                    }
-                  }}
-                  className="border-2 border-dashed border-blue-300 rounded-lg p-6 sm:p-8 hover:border-blue-400 transition-colors cursor-pointer"
-                />
-              </div>
-            </div>
+
           </div>
         </div>
       </section>

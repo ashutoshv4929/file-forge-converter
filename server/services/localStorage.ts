@@ -29,6 +29,11 @@ export class LocalStorageService {
     const filePath = path.join(OUTPUT_DIR, fileName);
     return await fs.readFile(filePath);
   }
+  
+  async downloadUploadedFile(fileName: string): Promise<Buffer> {
+    const filePath = path.join(UPLOAD_DIR, fileName);
+    return await fs.readFile(filePath);
+  }
 
   async saveOutputFile(buffer: Buffer, fileName: string): Promise<string> {
     const filePath = path.join(OUTPUT_DIR, fileName);

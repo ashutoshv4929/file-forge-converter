@@ -212,7 +212,7 @@ async function processJob(jobId: number) {
       const file = await storage.getFile(fileId);
       if (!file) throw new Error(`Input file ${fileId} not found`);
       
-      const buffer = await localStorageService.downloadFile(file.storagePath);
+      const buffer = await localStorageService.downloadUploadedFile(file.storagePath);
       inputBuffers.push(buffer);
       
       await storage.updateProcessingJob(jobId, { 
