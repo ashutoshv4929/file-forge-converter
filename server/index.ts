@@ -1,4 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
+
+// Set Google Cloud API key from environment
+process.env.GOOGLE_CLOUD_API_KEY = 'AIzaSyBAtC-hI6yCOQrgZRdezaoMqk2UCicGIy8';
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 

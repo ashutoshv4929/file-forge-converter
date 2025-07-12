@@ -1,0 +1,3 @@
+=== Image 1 ===
+Text extraction from images is not available in local mode. Please configure Google Cloud Vision API.
+

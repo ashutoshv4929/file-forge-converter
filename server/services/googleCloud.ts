@@ -7,11 +7,23 @@ const storage = new Storage({
   projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
 });
 
-// Initialize Google Vision API
+// Initialize Google Vision API with direct API key
 const vision = new ImageAnnotatorClient({
-  keyFilename: process.env.GOOGLE_CLOUD_KEY_PATH,
+  auth: {
+    scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+    credentials: {
+      private_key: process.env.GOOGLE_CLOUD_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      client_email: process.env.GOOGLE_CLOUD_CLIENT_EMAIL,
+    }
+  },
   projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
 });
+
+// Fallback to API key if credentials are not available
+const visionWithApiKey = process.env.GOOGLE_CLOUD_API_KEY ? new ImageAnnotatorClient({
+  auth: process.env.GOOGLE_CLOUD_API_KEY,
+  projectId: process.env.GOOGLE_CLOUD_PROJECT_ID || 'default-project',
+}) : vision;
 
 const bucketName = process.env.GOOGLE_CLOUD_STORAGE_BUCKET || 'pdf-tools-storage';
 const bucket = storage.bucket(bucketName);
@@ -52,7 +64,9 @@ export class GoogleCloudService {
 
   async extractTextFromImage(imageBuffer: Buffer): Promise<string> {
     try {
-      const [result] = await vision.textDetection({
+      // Use the Vision API with API key if available
+      const visionClient = process.env.GOOGLE_CLOUD_API_KEY ? visionWithApiKey : vision;
+      const [result] = await visionClient.textDetection({
         image: { content: imageBuffer },
       });
       

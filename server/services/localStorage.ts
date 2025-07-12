@@ -59,8 +59,14 @@ export class LocalStorageService {
   }
 
   async extractTextFromImage(imageBuffer: Buffer): Promise<string> {
-    // Simple fallback - return a placeholder for now
-    return "Text extraction from images is not available in local mode. Please configure Google Cloud Vision API.";
+    // Use Google Cloud Vision API for OCR
+    try {
+      const { googleCloudService } = await import('./googleCloud.js');
+      return await googleCloudService.extractTextFromImage(imageBuffer);
+    } catch (error) {
+      console.error('Google Cloud Vision API error:', error);
+      return "OCR processing failed. Please check your Google Cloud Vision API configuration.";
+    }
   }
 
   async extractTextFromPdf(pdfBuffer: Buffer): Promise<string> {
