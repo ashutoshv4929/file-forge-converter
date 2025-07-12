@@ -73,10 +73,17 @@ export default function Home() {
     },
     {
       id: 'ocr',
-      title: 'OCR PDF',
-      description: 'Extract text from scanned documents',
+      title: 'Extract Text',
+      description: 'Extract text from images and scanned documents',
       icon: Search,
       color: 'teal'
+    },
+    {
+      id: 'image-ocr',
+      title: 'Image to Text',
+      description: 'Extract text from JPG, PNG images using OCR',
+      icon: FileImage,
+      color: 'cyan'
     },
     {
       id: 'edit',

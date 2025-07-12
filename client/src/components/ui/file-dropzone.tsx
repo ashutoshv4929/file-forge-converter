@@ -12,7 +12,7 @@ interface FileDropzoneProps {
 
 export function FileDropzone({
   onFilesSelected,
-  accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png',
+  accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff',
   multiple = true,
   maxSize = 50 * 1024 * 1024, // 50MB
   className

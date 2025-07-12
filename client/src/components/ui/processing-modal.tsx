@@ -206,7 +206,20 @@ export function ProcessingModal({ isOpen, onClose, selectedTool }: ProcessingMod
             </div>
           )}
 
-          {/* Tool Options */}
+          {/* Tool-Specific Options */}
+          {selectedTool?.id === 'image-ocr' && uploadedFiles.length > 0 && !currentJobId && (
+            <div className="bg-blue-50 rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <h4 className="font-medium text-blue-900">Image OCR Processing</h4>
+              </div>
+              <p className="text-sm text-blue-700">
+                Upload images (JPG, PNG, GIF, etc.) to extract text using Google Cloud Vision API. 
+                The system will process all images and combine the extracted text into a single file.
+              </p>
+            </div>
+          )}
+
           {selectedTool?.id === 'split' && uploadedFiles.length > 0 && !currentJobId && (
             <div className="space-y-3">
               <h4 className="font-medium text-gray-900">Split Options</h4>

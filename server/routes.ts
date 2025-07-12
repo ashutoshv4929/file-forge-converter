@@ -1,6 +1,6 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
-import multer from "multer";
+import multer, { FileFilterCallback } from "multer";
 import { storage } from "./storage";
 import { googleCloudService } from "./services/googleCloud";
 import { pdfProcessor } from "./services/pdfProcessor";
@@ -14,12 +14,16 @@ const upload = multer({
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB limit
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
     const allowedTypes = [
       'application/pdf',
       'image/jpeg',
       'image/png',
       'image/jpg',
+      'image/webp',
+      'image/gif',
+      'image/bmp',
+      'image/tiff',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ];
@@ -129,7 +133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fileIndex = parseInt(req.params.fileIndex);
       
       const job = await storage.getProcessingJob(jobId);
-      if (!job || job.status !== 'completed' || !job.outputFiles[fileIndex]) {
+      if (!job || job.status !== 'completed' || !job.outputFiles || !job.outputFiles[fileIndex]) {
         return res.status(404).json({ error: "File not found" });
       }
 
@@ -204,20 +208,20 @@ async function processJob(jobId: number) {
         break;
 
       case 'split':
-        const ranges = job.options.ranges || [{ start: 1, end: 1 }];
+        const ranges = job.options?.ranges || [{ start: 1, end: 1 }];
         outputBuffers = await pdfProcessor.splitPDF(inputBuffers[0], ranges);
-        outputFileNames = ranges.map((_, i) => `split-${i + 1}-${uuidv4()}.pdf`);
+        outputFileNames = ranges.map((_: any, i: number) => `split-${i + 1}-${uuidv4()}.pdf`);
         break;
 
       case 'compress':
-        const quality = job.options.quality || 0.8;
+        const quality = job.options?.quality || 0.8;
         const compressedPdf = await pdfProcessor.compressPDF(inputBuffers[0], quality);
         outputBuffers = [compressedPdf];
         outputFileNames = [`compressed-${uuidv4()}.pdf`];
         break;
 
       case 'pdf-to-image':
-        const format = job.options.format || 'png';
+        const format = job.options?.format || 'png';
         const images = await pdfProcessor.pdfToImages(inputBuffers[0], format);
         outputBuffers = images;
         outputFileNames = images.map((_, i) => `page-${i + 1}-${uuidv4()}.${format}`);
@@ -233,6 +237,28 @@ async function processJob(jobId: number) {
         const extractedText = await pdfProcessor.extractTextFromPDF(inputBuffers[0]);
         const textBuffer = Buffer.from(extractedText, 'utf-8');
         outputBuffers = [textBuffer];
+        outputFileNames = [`extracted-text-${uuidv4()}.txt`];
+        break;
+
+      case 'image-ocr':
+        const imageTexts: string[] = [];
+        for (let i = 0; i < inputBuffers.length; i++) {
+          try {
+            const text = await googleCloudService.extractTextFromImage(inputBuffers[i]);
+            imageTexts.push(`=== Image ${i + 1} ===\n${text}\n\n`);
+          } catch (error) {
+            console.error(`OCR failed for image ${i + 1}:`, error);
+            imageTexts.push(`=== Image ${i + 1} ===\nOCR processing failed\n\n`);
+          }
+          
+          await storage.updateProcessingJob(jobId, { 
+            progress: 70 + Math.round(((i + 1) / inputBuffers.length) * 20)
+          });
+        }
+        
+        const combinedText = imageTexts.join('');
+        const combinedTextBuffer = Buffer.from(combinedText, 'utf-8');
+        outputBuffers = [combinedTextBuffer];
         outputFileNames = [`extracted-text-${uuidv4()}.txt`];
         break;
 

@@ -84,6 +84,13 @@ export class MemStorage implements IStorage {
     const job: ProcessingJob = {
       ...insertJob,
       id,
+      status: insertJob.status ?? 'pending',
+      progress: insertJob.progress ?? 0,
+      error: insertJob.error ?? null,
+      options: insertJob.options ?? {},
+      outputFiles: insertJob.outputFiles ?? [],
+      inputFiles: Array.isArray(insertJob.inputFiles) ? insertJob.inputFiles : 
+                  typeof insertJob.inputFiles === 'string' ? [insertJob.inputFiles] : [],
       createdAt: new Date(),
       completedAt: null,
     };

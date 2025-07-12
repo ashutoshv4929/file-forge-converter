@@ -20,6 +20,7 @@ const colorClasses = {
   purple: 'bg-purple-100 group-hover:bg-purple-200 text-purple-600',
   yellow: 'bg-yellow-100 group-hover:bg-yellow-200 text-yellow-600',
   teal: 'bg-teal-100 group-hover:bg-teal-200 text-teal-600',
+  cyan: 'bg-cyan-100 group-hover:bg-cyan-200 text-cyan-600',
   orange: 'bg-orange-100 group-hover:bg-orange-200 text-orange-600',
 };
 
