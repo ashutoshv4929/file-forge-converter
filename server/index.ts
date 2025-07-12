@@ -1,4 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Set Google Cloud API key from environment
 process.env.GOOGLE_CLOUD_API_KEY = 'AIzaSyBAtC-hI6yCOQrgZRdezaoMqk2UCicGIy8';
@@ -6,8 +8,19 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Use environment port or default to 10000 for Render
+const PORT = process.env.PORT || 10000;
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// Serve static files from the Vite build in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../../dist/public')));
+}
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -59,16 +72,24 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
+  // Use the PORT from environment or default to 10000 for Render
+  const port = parseInt(process.env.PORT || '10000', 10);
+  
+  // Start the server
+  server.listen(port, '0.0.0.0', () => {
+    log(`Server is running on port ${port}`);
+    log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  });
+  
+  // Handle uncaught exceptions
+  process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    process.exit(1);
+  });
+  
+  // Handle unhandled promise rejections
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    process.exit(1);
   });
 })();
