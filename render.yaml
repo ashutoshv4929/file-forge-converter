@@ -2,7 +2,10 @@ services:
   - type: web
     name: file-forge-converter
     env: node
-    buildCommand: npm install --prefer-offline --no-audit && npm run build
+    buildCommand: |
+      npm install -g npm@latest
+      npm ci --prefer-offline --no-audit
+      npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
