@@ -1,0 +1,20 @@
+=== Image 1 ===
+>
+>
+>
+attached_assets
+backend
+instance
+smart_file_converter
+api
+main
+services
+_init__.py
+local_storage.py
+ocr_service.py
+>
+static
+>
+templates
+README.md
+
